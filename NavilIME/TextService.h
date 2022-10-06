@@ -68,7 +68,7 @@ private:
 	void _UninitKeyEventSink();
 	bool _InitPreservedKey();
 	void _UninitPreservedKey();
-	WORD _ConvertVKeyToAscii(UINT code);
+	WORD _ConvertVKeyToAscii(UINT code, BYTE* lpKeyState);
 	void _Automata(UINT key);
 
 	/* LangBarItemButton */

@@ -97,7 +97,7 @@ void TextService::_UninitPreservedKey()
 	pKeystrokeMgr->Release();
 }
 
-WORD TextService::_ConvertVKeyToAscii(UINT code)
+WORD TextService::_ConvertVKeyToAscii(UINT code, BYTE* lpKeyState)
 {
 	//
 	// Map virtual key to scan code
@@ -108,8 +108,7 @@ WORD TextService::_ConvertVKeyToAscii(UINT code)
 	//
 	// Keyboard state
 	//
-	BYTE abKbdState[256] = { '\0' };
-	if (!GetKeyboardState(abKbdState))
+	if (!GetKeyboardState(lpKeyState))
 	{
 		return 0;
 	}
@@ -118,7 +117,7 @@ WORD TextService::_ConvertVKeyToAscii(UINT code)
 	// Map virtual key to character code
 	//
 	WORD wch = '\0';
-	if (ToAscii(code, scanCode, abKbdState, &wch, 0) == 1)
+	if (ToAscii(code, scanCode, lpKeyState, &wch, 0) == 1)
 	{
 		return wch;
 	}
@@ -128,13 +127,21 @@ WORD TextService::_ConvertVKeyToAscii(UINT code)
 
 void TextService::_Automata(UINT key)
 {
-	WORD code = _ConvertVKeyToAscii((UINT)key);
+	BYTE pKeyState[256] = { '\0' };
+	WORD code = _ConvertVKeyToAscii((UINT)key, pKeyState);
 	DebugLogFile(L"%s %x\n", L"TextService::_Automata (ascii)", code);
-	
+
 	_keyEaten = false;
+
+	// 만일 CTRL, ALT, WIN(LWIN, RWIN) 키 중 아무거나 눌린 상태라면 영어 자판으로 처리함.
+	if ((pKeyState[VK_CONTROL] & 0x80) || (pKeyState[VK_MENU] & 0x80) ||
+		(pKeyState[VK_LWIN] & 0x80) || (pKeyState[VK_RWIN] & 0x80)) {
+		DebugLogFile(L"Modifier Keys are down.");
+	}
 
 	if (gNavilIME.GetHangulMode() == false)
 	{
+		// TODO: English Keyboard setting and Automata here or bypass.
 		_keyEaten = false;
 		return;
 	}
@@ -199,6 +206,7 @@ STDMETHODIMP TextService::OnTestKeyDown(ITfContext *pContext, WPARAM wParam, LPA
 	// _testKeyHappend 변수는 OnTestKeyDown이 처리되면 true로 바뀌고 키 입력 처리가 OnKeyDown에서 완료되면 false로 바뀌므로 _testKeyHappend 변수 값이 true인 동안에는 OnTestKeyDown에서 automata 처리를 하지 않고 입력값 자체도 무시해버려야(Eaten=true) 한다.
 	if (gNavilIME.GetHangulMode() == false)
 	{
+		// TODO: 영어 자판 처리는 이곳에서,
 		_keyEaten = false;
 		*pIsEaten = false;
 		return S_OK;
