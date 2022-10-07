@@ -205,7 +205,7 @@ static void UnRegCategory(void)
 {
 	DebugLogFile(L"%s\n", L"UnRegCategory");
 
-	ITfCategoryMgr* pCategoryMgr = S_OK;
+	ITfCategoryMgr* pCategoryMgr;
 	HRESULT hr = S_OK;
 
 	hr = CoCreateInstance(CLSID_TF_CategoryMgr, NULL, 

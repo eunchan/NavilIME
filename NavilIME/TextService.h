@@ -69,7 +69,7 @@ private:
 	bool _InitPreservedKey();
 	void _UninitPreservedKey();
 	WORD _ConvertVKeyToAscii(UINT code, BYTE* lpKeyState);
-	void _Automata(UINT key);
+	void _Automata(UINT key, UINT scancode);
 
 	/* LangBarItemButton */
 	bool _InitLangBarItemButton();
